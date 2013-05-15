@@ -1,3 +1,4 @@
+import scala.annotation.tailrec
 import scala.util.Random
 
 /**
@@ -177,7 +178,7 @@ class NinetyNine extends org.scalatest.FunSuite {
   }
 
   test("Problem 24: Lotto: Draw N different random numbers from the set 1..M.") {
-    def lotto(qty: Int, max: Int) = List.fill(qty)(Random.nextInt(max + 1))
+    def lotto(qty: Int, max: Int) = List.fill(qty)(Random.nextInt(max)+1)
 
     val qty = 6
     val max = 49
@@ -205,12 +206,27 @@ class NinetyNine extends org.scalatest.FunSuite {
   }
 
   test("Problem 26: Generate the combinations of K distinct objects chosen from the N elements of a list.") {
-    def combinations[A](qty: Int, list: List[A]): List[List[A]] = ???
+    def factorial(num: Int) = {
+      @tailrec def facAcum(num: Int, acum: Int): Int = if (num == 0) acum else facAcum(num - 1, acum * num)
+      facAcum(num, 1)
+    }
+    def combinatorial(qty: Int, group: Int) = factorial(qty) / (factorial(group) * factorial(qty - group))
+    def combinations[A](qty: Int, list: List[A]): List[List[A]] = {
+        if (qty == 0)
+          Nil
+        else if (qty == 1)
+          for (elem <- list) yield List(elem)
+        else
+        for (elem <- list;
+             recur <- combinations(qty - 1, list.drop(list.indexOf(elem) + 1))
+        ) yield (elem :: recur)
+    }
 
     val source = List('a, 'b, 'c, 'd, 'e, 'f)
-    val qty = 3
-    val result = combinations(3, List('a, 'b, 'c, 'd, 'e, 'f))
-    assert(result.forall( comb => comb.size == qty && comb.forall( i => source.contains(i))))
+    val group = 3
+    val result = combinations(group, List('a, 'b, 'c, 'd, 'e, 'f))
+    assert(result.size === combinatorial(source.size, group))
+    assert(result.forall( comb => comb.size == group && comb.forall( i => source.contains(i))))
   }
 
   test("Problem 27: Group the elements of a set into disjoint subsets.") {
@@ -226,12 +242,13 @@ class NinetyNine extends org.scalatest.FunSuite {
 
   test("Problem 28: Sorting a list of lists according to length of sublists.") {
     def lsort(list: List[List[Any]]) = list.sortBy( list => list.size)
+    def frequencyMap[A](list: List[A]): Map[A, Int] = list.foldLeft(Map[A,Int]() withDefaultValue 0) {
+      (map, a) => map + ( a -> ( 1 + map(a) ) )
+    }
     def lsortFreq(list: List[List[Any]]) = {
-      val listLength = list.map(l => l.size)
-
-      println(listLength)
+      val frequency = frequencyMap(list.map(l => l.size))
       object ListOrdering extends Ordering[List[Any]] {
-        override def compare(x: List[Any], y: List[Any]): Int = Ordering.Int.compare(listLength.indexOf(x.size), listLength.indexOf(y.size))
+        override def compare(x: List[Any], y: List[Any]): Int = Ordering.Int.compare(frequency(x.size), frequency(y.size))
       }
       list.sorted(ListOrdering)
     }
