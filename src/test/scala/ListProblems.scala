@@ -4,9 +4,7 @@ import scala.util.Random
 /**
  * http://aperiodic.net/phil/scala/s-99/
  */
-class NinetyNine extends org.scalatest.FunSuite {
-
-  //Lists
+class ListProblems extends org.scalatest.FunSuite {
 
   test("Problem 1: Find the last element of a list.") {
     def last(list: List[Any]) = list.last
@@ -219,7 +217,7 @@ class NinetyNine extends org.scalatest.FunSuite {
         else
         for (elem <- list;
              recur <- combinations(qty - 1, list.drop(list.indexOf(elem) + 1))
-        ) yield (elem :: recur)
+        ) yield elem :: recur
     }
 
     val source = List('a, 'b, 'c, 'd, 'e, 'f)
